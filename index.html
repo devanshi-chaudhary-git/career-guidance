@@ -6,7 +6,10 @@
     <title>Career Guidance App</title>
     <!-- Tailwind CSS CDN for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti CDN for celebration animation -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <style>
+        /* Base styles */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; /* Light blue-gray background */
@@ -17,6 +20,7 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            overflow: hidden; /* Prevent scrollbar from starfield */
         }
         .container {
             background-color: #ffffff;
@@ -25,6 +29,8 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             max-width: 600px;
             width: 100%;
+            position: relative; /* For z-index */
+            z-index: 10; /* Ensure container is above stars */
         }
         .input-group label {
             display: block;
@@ -71,25 +77,105 @@
         .interest-item span {
             color: #475569; /* Slate 600 */
         }
+
+        /* General Modal Styles (for custom message and new add interest form) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.6); /* Darker, blurred background */
+            backdrop-filter: blur(5px); /* Blurred background effect */
+            justify-content: center;
+            align-items: center;
+            padding: 20px; /* Add padding for smaller screens */
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px 30px; /* Increased padding */
+            border: 1px solid #ddd;
+            border-radius: 12px; /* More rounded */
+            width: 90%; /* Responsive width */
+            max-width: 500px; /* Max width for forms */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25); /* Stronger shadow */
+            text-align: center;
+            transform: translateY(-20px); /* Slight lift animation */
+            opacity: 0;
+            animation: fadeInScale 0.3s forwards;
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .modal-content .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 32px; /* Larger close button */
+            font-weight: bold;
+            line-height: 1; /* Align better */
+            margin-top: -10px; /* Adjust position */
+            margin-right: -10px;
+        }
+        .modal-content .close-button:hover,
+        .modal-content .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Starry Background Effect */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle linear infinite;
+        }
+
+        /* Animation for stars */
+        @keyframes twinkle {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
     </style>
 </head>
 <body>
+    <div class="stars" id="starfield"></div>
+
     <div class="container">
         <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Career Guidance App</h1>
 
-        <!-- Section to Save Data -->
-        <div class="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Your Career Interest</h2>
-            <div class="input-group mb-4">
-                <label for="userName">Your Name:</label>
-                <input type="text" id="userName" placeholder="Enter your name" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <div class="input-group mb-6">
-                <label for="careerInterest">Career Interest:</label>
-                <input type="text" id="careerInterest" placeholder="e.g., Software Engineering, Design, Healthcare" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-            </div>
-            <button id="saveButton" class="btn">Save Interest</button>
+        <!-- Display User ID -->
+        <div class="mb-4 text-center text-sm text-gray-600">
+            Your User ID: <span id="userIdDisplay" class="font-mono text-blue-700">Loading...</span>
         </div>
+
+        <!-- Button to open the Add Career Interest modal -->
+        <button id="openAddInterestModalBtn" class="btn mb-8">Add New Career Interest</button>
 
         <!-- Section to Display Data -->
         <div class="p-4 bg-green-50 rounded-lg shadow-inner">
@@ -101,143 +187,273 @@
         </div>
     </div>
 
-    <script>
-        // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCTMtHKuJ5H3mRxXpCQeiGD5Xtpk7T9BIk",
-            authDomain: "career-guidance-41637.firebaseapp.com",
-            projectId: "career-guidance-41637",
-            storageBucket: "career-guidance-41637.firebasestorage.app",
-            messagingSenderId: "474018207954",
-            appId: "1:474018207954:web:1c329fe61fd6ef0898350b",
-            measurementId: "G-DE858CD9M1"
+    <!-- Modal for adding Career Interest (newly created floating form) -->
+    <div id="addInterestModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeAddInterestModalBtn">&times;</span>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Your Career Interest</h2>
+            <div class="input-group mb-4">
+                <label for="userNameModal">Your Name:</label>
+                <input type="text" id="userNameModal" placeholder="Enter your name" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md">
+            </div>
+            <div class="input-group mb-6">
+                <label for="careerInterestModal">Career Interest:</label>
+                <input type="text" id="careerInterestModal" placeholder="e.g., Software Engineering, Design, Healthcare" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md">
+            </div>
+            <button id="saveInterestModalBtn" class="btn">Save Interest</button>
+        </div>
+    </div>
+
+    <!-- Custom Modal for Messages (existing one) -->
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeCustomModalBtn">&times;</span>
+            <p id="modalMessage" class="text-gray-700"></p>
+            <button id="modalOkButton" class="btn mt-4 w-1/2">OK</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs - Modular version -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        // Global variables provided by the Canvas environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyBaVUQdGNPd9vY3nVpc6jR0QBC7lT_b4Dk",
+            authDomain: "career-guidance-5a345.firebaseapp.com",
+            projectId: "career-guidance-5a345",
+            storageBucket: "career-guidance-5a345.firebasestorage.app",
+            messagingSenderId: "782798912640",
+            appId: "1:782798912640:web:bc3a468b46f0dadb08fa65",
+            measurementId: "G-4VMR69FP81"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let currentUserId = null;
+
+        // Get references to UI elements
+        const openAddInterestModalBtn = document.getElementById('openAddInterestModalBtn');
+        const addInterestModal = document.getElementById('addInterestModal');
+        const closeAddInterestModalBtn = document.getElementById('closeAddInterestModalBtn');
+        const userNameModalInput = document.getElementById('userNameModal');
+        const careerInterestModalInput = document.getElementById('careerInterestModal');
+        const saveInterestModalBtn = document.getElementById('saveInterestModalBtn');
+        const interestsList = document.getElementById('interestsList');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const userIdDisplay = document.getElementById('userIdDisplay');
+
+        // General Message Modal elements
+        const customModal = document.getElementById('customModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeCustomModalBtn = document.getElementById('closeCustomModalBtn');
+        const modalOkButton = document.getElementById('modalOkButton');
+
+        /**
+         * Displays a custom modal message.
+         * @param {string} message - The message to display.
+         */
+        const showModal = (message) => {
+            modalMessage.textContent = message;
+            customModal.style.display = 'flex';
         };
 
-        // Initialize Firebase
-        // This 'firebase' object is globally available because of the compat SDKs.
-        // It's good practice to wrap your Firebase initialization in a check for window.onload or DOMContentLoaded
-        // to ensure the Firebase SDK scripts are fully loaded before trying to initialize.
-        window.onload = function() {
+        // Close general message modal when close button is clicked
+        closeCustomModalBtn.onclick = () => {
+            customModal.style.display = 'none';
+        };
+
+        // Close general message modal when OK button is clicked
+        modalOkButton.onclick = () => {
+            customModal.style.display = 'none';
+        };
+
+        // Close general message modal when clicking outside of it
+        window.onclick = (event) => {
+            if (event.target === customModal) {
+                customModal.style.display = 'none';
+            } else if (event.target === addInterestModal) {
+                addInterestModal.style.display = 'none';
+            }
+        };
+
+        // Open Add Interest Modal
+        openAddInterestModalBtn.addEventListener('click', () => {
+            addInterestModal.style.display = 'flex';
+            userNameModalInput.value = ''; // Clear inputs when opening
+            careerInterestModalInput.value = '';
+        });
+
+        // Close Add Interest Modal
+        closeAddInterestModalBtn.addEventListener('click', () => {
+            addInterestModal.style.display = 'none';
+        });
+
+        /**
+         * Initializes Firebase and sets up authentication.
+         */
+        const initializeFirebase = async () => {
             try {
-                // Initialize the Firebase app with your configuration
-                const app = firebase.initializeApp(firebaseConfig);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
 
-                // Get a reference to the Cloud Firestore service
-                const db = firebase.firestore();
-
-                // Get references to UI elements
-                const userNameInput = document.getElementById('userName');
-                const careerInterestInput = document.getElementById('careerInterest');
-                const saveButton = document.getElementById('saveButton');
-                const interestsList = document.getElementById('interestsList');
-                const loadingMessage = document.getElementById('loadingMessage');
-
-                /**
-                 * Saves a new career interest to the Firestore database.
-                 */
-                const saveCareerInterest = async () => {
-                    const name = userNameInput.value.trim();
-                    const interest = careerInterestInput.value.trim();
-
-                    if (name === "" || interest === "") {
-                        alert("Please enter both your name and career interest."); // Using alert for simplicity, but for a real app, use a custom modal.
-                        return;
-                    }
-
-                    try {
-                        // Add a new document to the 'career_interests' collection
-                        // Firestore automatically generates a unique ID for each new document
-                        await db.collection("career_interests").add({
-                            userName: name,
-                            interest: interest,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp() // Adds a server-generated timestamp
-                        });
-
-                        console.log("Document successfully written!");
-                        userNameInput.value = ''; // Clear input fields after saving
-                        careerInterestInput.value = '';
-                    } catch (error) {
-                        console.error("Error writing document: ", error);
-                        alert("Failed to save interest. Check console for details."); // Using alert for simplicity, but for a real app, use a custom modal.
-                    }
-                };
-
-                /**
-                 * Fetches and displays career interests from Firestore in real-time.
-                 * Uses onSnapshot to listen for changes.
-                 */
-                const loadCareerInterests = () => {
-                    // Create a query to order the interests by timestamp (newest first)
-                    // Note: Firestore requires an index for orderBy clauses. If you get an error
-                    // about missing index, Firebase console will provide a link to create it.
-                    // For simplicity, we are not using orderBy here to avoid index configuration issues.
-                    // If you want to sort, you'd do: db.collection("career_interests").orderBy("timestamp", "desc")
-                    db.collection("career_interests").onSnapshot((snapshot) => {
-                        interestsList.innerHTML = ''; // Clear previous list
-                        loadingMessage.style.display = 'none'; // Hide loading message
-
-                        if (snapshot.empty) {
-                            interestsList.innerHTML = '<p class="text-gray-500 text-center">No career interests saved yet. Be the first!</p>';
-                            return;
+                // Listen for authentication state changes
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                    } else {
+                        // If no user is logged in, attempt to sign in with custom token,
+                        // but always fallback to anonymous sign-in if custom token fails or is not present.
+                        if (initialAuthToken) {
+                            try {
+                                await signInWithCustomToken(auth, initialAuthToken);
+                                currentUserId = auth.currentUser.uid;
+                            } catch (error) {
+                                console.warn("Custom token sign-in failed, falling back to anonymous sign-in:", error);
+                                await signInAnonymously(auth);
+                                currentUserId = auth.currentUser.uid;
+                            }
+                        } else {
+                            // If no custom token, sign in anonymously
+                            await signInAnonymously(auth);
+                            currentUserId = auth.currentUser.uid;
                         }
-
-                        snapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const listItem = document.createElement('div');
-                            listItem.className = 'interest-item';
-                            listItem.innerHTML = `
-                                <strong>${data.userName || 'Anonymous'}</strong> is interested in <span>${data.interest || 'N/A'}</span>.
-                                <br>
-                                <span class="text-xs text-gray-500">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'No date'}</span>
-                            `;
-                            interestsList.appendChild(listItem);
-                        });
-                    }, (error) => {
-                        console.error("Error fetching documents: ", error);
-                        interestsList.innerHTML = `<p class="text-red-500 text-center">Error loading interests: ${error.message}</p>`;
-                        loadingMessage.style.display = 'none';
-                    });
-                };
-
-                // Add event listener to the save button
-                saveButton.addEventListener('click', saveCareerInterest);
-
-                // Load existing career interests when the page loads
-                loadCareerInterests();
-
-                // IMPORTANT: Cloud Firestore Security Rules
-                // By default, Firestore rules might be very restrictive.
-                // For this example to work, you will need to set your Firestore Security Rules
-                // to allow read/write access. During development, you might set them to:
-                /*
-                rules_version = '2';
-                service cloud.firestore {
-                  match /databases/{database}/documents {
-                    match /{document=**} {
-                      allow read, write: if request.auth != null; // Allows authenticated users
                     }
-                  }
-                }
-                */
-                // For a simple public app, you might even allow:
-                /*
-                rules_version = '2';
-                service cloud.firestore {
-                  match /databases/{database}/documents {
-                    match /{document=**} {
-                      allow read, write: if true; // WARNING: This is INSECURE for production apps!
-                    }
-                  }
-                }
-                */
-                // For actual production, you'd implement proper authentication and granular rules.
+                    userIdDisplay.textContent = currentUserId;
+                    // Once authenticated, load interests
+                    loadCareerInterests();
+                });
 
             } catch (e) {
                 console.error("Error initializing Firebase:", e);
-                document.getElementById('interestsList').innerHTML = `<p class="text-red-500 text-center">Error: Firebase failed to initialize. Please check your console for details and ensure all Firebase SDKs are correctly linked.</p>`;
-                document.getElementById('loadingMessage').style.display = 'none';
+                interestsList.innerHTML = `<p class="text-red-500 text-center">Error: Firebase failed to initialize. Please check your console for details.</p>`;
+                loadingMessage.style.display = 'none';
             }
         };
+
+        /**
+         * Saves a new career interest to the Firestore database.
+         */
+        const saveCareerInterest = async () => {
+            const name = userNameModalInput.value.trim();
+            const interest = careerInterestModalInput.value.trim();
+
+            if (name === "" || interest === "") {
+                showModal("Please enter both your name and career interest.");
+                return;
+            }
+
+            if (!db || !currentUserId) {
+                showModal("Firebase is not initialized or user is not authenticated yet. Please wait.");
+                return;
+            }
+
+            try {
+                // Store data in a private collection for the user
+                // Path: /artifacts/{appId}/users/{userId}/career_interests
+                const userInterestsCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/career_interests`);
+                await addDoc(userInterestsCollectionRef, {
+                    userName: name,
+                    interest: interest,
+                    timestamp: serverTimestamp() // Adds a server-generated timestamp
+                });
+
+                console.log("Document successfully written!");
+                userNameModalInput.value = ''; // Clear input fields after saving
+                careerInterestModalInput.value = '';
+                addInterestModal.style.display = 'none'; // Close the modal on success
+
+                // Trigger confetti celebration
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                showModal("Failed to save interest. Check console for details.");
+            }
+        };
+
+        /**
+         * Fetches and displays career interests from Firestore in real-time.
+         * Uses onSnapshot to listen for changes.
+         */
+        const loadCareerInterests = () => {
+            if (!db || !currentUserId) {
+                console.log("Firestore not ready or user not authenticated to load interests.");
+                return;
+            }
+
+            // Create a query to order the interests by timestamp (newest first)
+            // For this example, we fetch all and sort in memory to avoid index configuration issues.
+            const userInterestsCollectionRef = collection(db, `artifacts/${appId}/users/${currentUserId}/career_interests`);
+
+            onSnapshot(userInterestsCollectionRef, (snapshot) => {
+                interestsList.innerHTML = ''; // Clear previous list
+                loadingMessage.style.display = 'none'; // Hide loading message
+
+                if (snapshot.empty) {
+                    interestsList.innerHTML = '<p class="text-gray-500 text-center">No career interests saved yet. Be the first!</p>';
+                    return;
+                }
+
+                const interests = [];
+                snapshot.forEach((doc) => {
+                    interests.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort interests by timestamp in descending order (newest first)
+                interests.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
+
+                interests.forEach((data) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'interest-item rounded-lg p-3 shadow-sm';
+                    listItem.innerHTML = `
+                        <p class="text-lg font-semibold text-gray-800">${data.interest || 'N/A'}</p>
+                        <p class="text-sm text-gray-600">By <strong>${data.userName || 'Anonymous'}</strong></p>
+                        <p class="text-xs text-gray-500 mt-1">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'No date'}</p>
+                    `;
+                    interestsList.appendChild(listItem);
+                });
+            }, (error) => {
+                console.error("Error fetching documents: ", error);
+                interestsList.innerHTML = `<p class="text-red-500 text-center">Error loading interests: ${error.message}</p>`;
+                loadingMessage.style.display = 'none';
+            });
+        };
+
+        // Add event listener to the save button (for the modal)
+        saveInterestModalBtn.addEventListener('click', saveCareerInterest);
+
+        // Starry Background effect initialization
+        const createStars = () => {
+            const starfield = document.getElementById('starfield');
+            const numStars = 150; // Number of stars
+
+            for (let i = 0; i < numStars; i++) {
+                let star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = star.style.height = `${Math.random() * 3 + 1}px`; // Random size between 1 and 4px
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 5}s`; // Random delay for twinkle effect
+                star.style.animationDuration = `${Math.random() * 3 + 2}s`; // Random duration for twinkle
+                starfield.appendChild(star);
+            }
+        };
+
+        // Initialize Firebase and set up authentication when the DOM is fully loaded
+        window.addEventListener('DOMContentLoaded', () => {
+            initializeFirebase();
+            createStars(); // Initialize starry background
+        });
     </script>
 </body>
 </html>
