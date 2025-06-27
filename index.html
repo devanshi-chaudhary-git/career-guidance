@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Guidance App</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155; /* Slate 700 */
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1; /* Slate 300 */
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 12px 20px;
+            background-color: #4f46e5; /* Indigo 600 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            width: 100%;
+        }
+        .btn:hover {
+            background-color: #4338ca; /* Indigo 700 */
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .interest-item {
+            background-color: #e2e8f0; /* Slate 200 */
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .interest-item strong {
+            color: #1e293b; /* Slate 900 */
+        }
+        .interest-item span {
+            color: #475569; /* Slate 600 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Career Guidance App</h1>
+
+        <!-- Section to Save Data -->
+        <div class="mb-8 p-4 bg-blue-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Your Career Interest</h2>
+            <div class="input-group mb-4">
+                <label for="userName">Your Name:</label>
+                <input type="text" id="userName" placeholder="Enter your name" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="input-group mb-6">
+                <label for="careerInterest">Career Interest:</label>
+                <input type="text" id="careerInterest" placeholder="e.g., Software Engineering, Design, Healthcare" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button id="saveButton" class="btn">Save Interest</button>
+        </div>
+
+        <!-- Section to Display Data -->
+        <div class="p-4 bg-green-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Saved Career Interests</h2>
+            <div id="interestsList" class="space-y-3">
+                <!-- Interests will be loaded here -->
+                <p class="text-gray-500 text-center" id="loadingMessage">Loading interests...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTMtHKuJ5H3mRxXpCQeiGD5Xtpk7T9BIk",
+            authDomain: "career-guidance-41637.firebaseapp.com",
+            projectId: "career-guidance-41637",
+            storageBucket: "career-guidance-41637.firebasestorage.app",
+            messagingSenderId: "474018207954",
+            appId: "1:474018207954:web:1c329fe61fd6ef0898350b",
+            measurementId: "G-DE858CD9M1"
+        };
+
+        // Initialize Firebase
+        // This 'firebase' object is globally available because of the compat SDKs.
+        // It's good practice to wrap your Firebase initialization in a check for window.onload or DOMContentLoaded
+        // to ensure the Firebase SDK scripts are fully loaded before trying to initialize.
+        window.onload = function() {
+            try {
+                // Initialize the Firebase app with your configuration
+                const app = firebase.initializeApp(firebaseConfig);
+
+                // Get a reference to the Cloud Firestore service
+                const db = firebase.firestore();
+
+                // Get references to UI elements
+                const userNameInput = document.getElementById('userName');
+                const careerInterestInput = document.getElementById('careerInterest');
+                const saveButton = document.getElementById('saveButton');
+                const interestsList = document.getElementById('interestsList');
+                const loadingMessage = document.getElementById('loadingMessage');
+
+                /**
+                 * Saves a new career interest to the Firestore database.
+                 */
+                const saveCareerInterest = async () => {
+                    const name = userNameInput.value.trim();
+                    const interest = careerInterestInput.value.trim();
+
+                    if (name === "" || interest === "") {
+                        alert("Please enter both your name and career interest."); // Using alert for simplicity, but for a real app, use a custom modal.
+                        return;
+                    }
+
+                    try {
+                        // Add a new document to the 'career_interests' collection
+                        // Firestore automatically generates a unique ID for each new document
+                        await db.collection("career_interests").add({
+                            userName: name,
+                            interest: interest,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp() // Adds a server-generated timestamp
+                        });
+
+                        console.log("Document successfully written!");
+                        userNameInput.value = ''; // Clear input fields after saving
+                        careerInterestInput.value = '';
+                    } catch (error) {
+                        console.error("Error writing document: ", error);
+                        alert("Failed to save interest. Check console for details."); // Using alert for simplicity, but for a real app, use a custom modal.
+                    }
+                };
+
+                /**
+                 * Fetches and displays career interests from Firestore in real-time.
+                 * Uses onSnapshot to listen for changes.
+                 */
+                const loadCareerInterests = () => {
+                    // Create a query to order the interests by timestamp (newest first)
+                    // Note: Firestore requires an index for orderBy clauses. If you get an error
+                    // about missing index, Firebase console will provide a link to create it.
+                    // For simplicity, we are not using orderBy here to avoid index configuration issues.
+                    // If you want to sort, you'd do: db.collection("career_interests").orderBy("timestamp", "desc")
+                    db.collection("career_interests").onSnapshot((snapshot) => {
+                        interestsList.innerHTML = ''; // Clear previous list
+                        loadingMessage.style.display = 'none'; // Hide loading message
+
+                        if (snapshot.empty) {
+                            interestsList.innerHTML = '<p class="text-gray-500 text-center">No career interests saved yet. Be the first!</p>';
+                            return;
+                        }
+
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            const listItem = document.createElement('div');
+                            listItem.className = 'interest-item';
+                            listItem.innerHTML = `
+                                <strong>${data.userName || 'Anonymous'}</strong> is interested in <span>${data.interest || 'N/A'}</span>.
+                                <br>
+                                <span class="text-xs text-gray-500">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'No date'}</span>
+                            `;
+                            interestsList.appendChild(listItem);
+                        });
+                    }, (error) => {
+                        console.error("Error fetching documents: ", error);
+                        interestsList.innerHTML = `<p class="text-red-500 text-center">Error loading interests: ${error.message}</p>`;
+                        loadingMessage.style.display = 'none';
+                    });
+                };
+
+                // Add event listener to the save button
+                saveButton.addEventListener('click', saveCareerInterest);
+
+                // Load existing career interests when the page loads
+                loadCareerInterests();
+
+                // IMPORTANT: Cloud Firestore Security Rules
+                // By default, Firestore rules might be very restrictive.
+                // For this example to work, you will need to set your Firestore Security Rules
+                // to allow read/write access. During development, you might set them to:
+                /*
+                rules_version = '2';
+                service cloud.firestore {
+                  match /databases/{database}/documents {
+                    match /{document=**} {
+                      allow read, write: if request.auth != null; // Allows authenticated users
+                    }
+                  }
+                }
+                */
+                // For a simple public app, you might even allow:
+                /*
+                rules_version = '2';
+                service cloud.firestore {
+                  match /databases/{database}/documents {
+                    match /{document=**} {
+                      allow read, write: if true; // WARNING: This is INSECURE for production apps!
+                    }
+                  }
+                }
+                */
+                // For actual production, you'd implement proper authentication and granular rules.
+
+            } catch (e) {
+                console.error("Error initializing Firebase:", e);
+                document.getElementById('interestsList').innerHTML = `<p class="text-red-500 text-center">Error: Firebase failed to initialize. Please check your console for details and ensure all Firebase SDKs are correctly linked.</p>`;
+                document.getElementById('loadingMessage').style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
