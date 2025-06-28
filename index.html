@@ -13,125 +13,14 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8; /* Light blue-gray background */
-            display: flex;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden; /* Prevent scrollbar from starfield */
+            display: flex; /* Flex container for screens */
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow: hidden; /* Prevent scrollbar from starfield */
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            position: relative; /* For z-index */
-            z-index: 10; /* Ensure container is above stars */
-        }
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #334155; /* Slate 700 */
-        }
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1; /* Slate 300 */
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        .btn {
-            padding: 12px 20px;
-            background-color: #4f46e5; /* Indigo 600 */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            width: 100%;
-        }
-        .btn:hover {
-            background-color: #4338ca; /* Indigo 700 */
-            transform: translateY(-2px);
-        }
-        .btn:active {
-            transform: translateY(0);
-        }
-        .interest-item {
-            background-color: #e2e8f0; /* Slate 200 */
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        .interest-item strong {
-            color: #1e293b; /* Slate 900 */
-        }
-        .interest-item span {
-            color: #475569; /* Slate 600 */
-        }
-
-        /* General Modal Styles (for custom message and new add interest form) */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.6); /* Darker, blurred background */
-            backdrop-filter: blur(5px); /* Blurred background effect */
-            justify-content: center;
-            align-items: center;
-            padding: 20px; /* Add padding for smaller screens */
-            box-sizing: border-box;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            padding: 20px 30px; /* Increased padding */
-            border: 1px solid #ddd;
-            border-radius: 12px; /* More rounded */
-            width: 90%; /* Responsive width */
-            max-width: 500px; /* Max width for forms */
-            box-shadow: 0 15px 30px rgba(0,0,0,0.25); /* Stronger shadow */
-            text-align: center;
-            transform: translateY(-20px); /* Slight lift animation */
-            opacity: 0;
-            animation: fadeInScale 0.3s forwards;
-        }
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        .modal-content .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 32px; /* Larger close button */
-            font-weight: bold;
-            line-height: 1; /* Align better */
-            margin-top: -10px; /* Adjust position */
-            margin-right: -10px;
-        }
-        .modal-content .close-button:hover,
-        .modal-content .close-button:focus {
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
         }
 
         /* Starry Background Effect */
@@ -161,25 +50,200 @@
             100% { opacity: 0; transform: scale(0.5); }
         }
 
+        /* Main app container */
+        .app-container {
+            background-color: #ffffff;
+            padding: 2rem; /* Responsive padding */
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 95%; /* Take almost full width on small screens */
+            max-width: 768px; /* Max width for larger screens (md breakpoint) */
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-height: 500px; /* Minimum height for better appearance */
+            box-sizing: border-box;
+        }
+
+        /* Buttons and Inputs */
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 12px 20px;
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn:hover {
+            background-color: #4338ca;
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Interest Item display */
+        .interest-item {
+            background-color: #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .interest-item strong {
+            color: #1e293b;
+        }
+        .interest-item span {
+            color: #475569;
+        }
+
+        /* General Modal Styles (for custom message and new add interest form) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 2000; /* Higher z-index for modals */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.7); /* Darker, more prominent overlay */
+            backdrop-filter: blur(8px); /* Stronger blurred background effect */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 25px 35px; /* Increased padding */
+            border: 1px solid #ddd;
+            border-radius: 16px; /* Even more rounded */
+            width: 95%; /* Responsive width */
+            max-width: 550px; /* Max width for forms */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); /* Stronger shadow */
+            text-align: center;
+            transform: translateY(-30px); /* More pronounced lift animation */
+            opacity: 0;
+            animation: fadeInScale 0.4s ease-out forwards; /* Slightly slower, smoother animation */
+            position: relative;
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .modal-content .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 36px; /* Larger close button */
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .modal-content .close-button:hover,
+        .modal-content .close-button:focus {
+            color: #333;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 640px) { /* Tailwind's sm breakpoint */
+            body {
+                padding: 10px; /* Less padding on very small screens */
+            }
+            .app-container {
+                padding: 1.5rem;
+                border-radius: 8px; /* Slightly less rounded on small screens */
+            }
+            .modal-content {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            .modal-content .close-button {
+                font-size: 30px;
+                top: 10px;
+                right: 10px;
+            }
+            h1 {
+                font-size: 2rem; /* Smaller h1 on mobile */
+            }
+            h2 {
+                font-size: 1.5rem; /* Smaller h2 on mobile */
+            }
+            .btn {
+                font-size: 0.95rem;
+                padding: 10px 15px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="stars" id="starfield"></div>
 
-    <div class="container">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Career Guidance App</h1>
+    <!-- Welcome Screen (Initial Homepage) -->
+    <div id="welcomeScreen" class="w-full h-full flex flex-col justify-center items-center text-center p-6 sm:p-10 md:p-16 relative z-10">
+        <div class="bg-white p-8 sm:p-10 md:p-12 rounded-2xl shadow-xl max-w-lg w-full transform transition-all duration-300 hover:scale-105">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+                Your <span class="text-indigo-600">Future</span> Starts Here
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-700 mb-8 max-w-prose mx-auto">
+                Discover and track your career aspirations with ease. A personalized journey awaits!
+            </p>
+            <button id="startJourneyBtn" class="btn text-xl sm:text-2xl py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6 sm:w-7 sm:h-7">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                </svg>
+                Start Your Journey
+            </button>
+        </div>
+    </div>
 
-        <!-- Display User ID -->
-        <div class="mb-4 text-center text-sm text-gray-600">
-            Your User ID: <span id="userIdDisplay" class="font-mono text-blue-700">Loading...</span>
+    <!-- Main Application Screen (hidden by default) -->
+    <div id="mainAppScreen" class="app-container hidden">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 md:text-4xl">Career Guidance App</h1>
+
+        <!-- Display User ID after login -->
+        <div class="mb-4 text-center text-sm text-gray-600 md:text-base">
+            Your User ID: <span id="userIdDisplay" class="font-mono text-blue-700 break-words">Loading...</span>
         </div>
 
         <!-- Button to open the Add Career Interest modal -->
-        <button id="openAddInterestModalBtn" class="btn mb-8">Add New Career Interest</button>
+        <button id="openAddInterestModalBtn" class="btn mb-4">Add New Career Interest</button>
 
         <!-- Section to Display Data -->
-        <div class="p-4 bg-green-50 rounded-lg shadow-inner">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Saved Career Interests</h2>
+        <div class="p-4 bg-green-50 rounded-lg shadow-inner flex-grow">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4 md:text-3xl">Saved Career Interests</h2>
             <div id="interestsList" class="space-y-3">
                 <!-- Interests will be loaded here -->
                 <p class="text-gray-500 text-center" id="loadingMessage">Loading interests...</p>
@@ -187,11 +251,11 @@
         </div>
     </div>
 
-    <!-- Modal for adding Career Interest (newly created floating form) -->
+    <!-- Modal for adding Career Interest -->
     <div id="addInterestModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeAddInterestModalBtn">&times;</span>
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Add Your Career Interest</h2>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4 md:text-3xl">Add Your Career Interest</h2>
             <div class="input-group mb-4">
                 <label for="userNameModal">Your Name:</label>
                 <input type="text" id="userNameModal" placeholder="Enter your name" class="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md">
@@ -204,7 +268,7 @@
         </div>
     </div>
 
-    <!-- Custom Modal for Messages (existing one) -->
+    <!-- Custom Modal for Messages -->
     <div id="customModal" class="modal">
         <div class="modal-content">
             <span class="close-button" id="closeCustomModalBtn">&times;</span>
@@ -237,6 +301,10 @@
         let currentUserId = null;
 
         // Get references to UI elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const mainAppScreen = document.getElementById('mainAppScreen');
+        const startJourneyBtn = document.getElementById('startJourneyBtn');
+
         const openAddInterestModalBtn = document.getElementById('openAddInterestModalBtn');
         const addInterestModal = document.getElementById('addInterestModal');
         const closeAddInterestModalBtn = document.getElementById('closeAddInterestModalBtn');
@@ -306,33 +374,35 @@
                 onAuthStateChanged(auth, async (user) => {
                     if (user) {
                         currentUserId = user.uid;
+                        userIdDisplay.textContent = currentUserId;
+                        // Show main app screen only after successful authentication
+                        welcomeScreen.classList.add('hidden');
+                        mainAppScreen.classList.remove('hidden');
+                        loadCareerInterests(); // Load interests once authenticated
                     } else {
                         // If no user is logged in, attempt to sign in with custom token,
                         // but always fallback to anonymous sign-in if custom token fails or is not present.
                         if (initialAuthToken) {
                             try {
                                 await signInWithCustomToken(auth, initialAuthToken);
-                                currentUserId = auth.currentUser.uid;
+                                // The onAuthStateChanged listener will handle the UI update after successful sign-in
                             } catch (error) {
                                 console.warn("Custom token sign-in failed, falling back to anonymous sign-in:", error);
                                 await signInAnonymously(auth);
-                                currentUserId = auth.currentUser.uid;
                             }
                         } else {
                             // If no custom token, sign in anonymously
                             await signInAnonymously(auth);
-                            currentUserId = auth.currentUser.uid;
                         }
                     }
-                    userIdDisplay.textContent = currentUserId;
-                    // Once authenticated, load interests
-                    loadCareerInterests();
                 });
 
             } catch (e) {
                 console.error("Error initializing Firebase:", e);
                 interestsList.innerHTML = `<p class="text-red-500 text-center">Error: Firebase failed to initialize. Please check your console for details.</p>`;
                 loadingMessage.style.display = 'none';
+                welcomeScreen.classList.remove('hidden'); // Ensure welcome screen is visible if Firebase fails
+                mainAppScreen.classList.add('hidden');
             }
         };
 
@@ -449,10 +519,14 @@
             }
         };
 
-        // Initialize Firebase and set up authentication when the DOM is fully loaded
+        // Event listener for the "Start Your Journey" button on the welcome screen
+        startJourneyBtn.addEventListener('click', initializeFirebase);
+
+        // Initialize stars when the DOM is fully loaded
         window.addEventListener('DOMContentLoaded', () => {
-            initializeFirebase();
             createStars(); // Initialize starry background
+            // Firebase initialization will now be triggered by the "Start Your Journey" button
+            // unless the user is already authenticated (handled by onAuthStateChanged).
         });
     </script>
 </body>
