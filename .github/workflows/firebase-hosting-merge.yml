@@ -13,10 +13,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18' # Use a Node.js version suitable for your project, e.g., '20'
+      - name: Run npm install
         run: npm install
-        working-directory: ./career-guidance 
-        working-directory: ./career-guidance 
+        working-directory: ./career-guidance # <--- This line needs 10 spaces of indentation
+      - name: Run npm run build # <--- This step needs 'name:' and 6 spaces of indentation
+        run: npm run build
+        working-directory: ./career-guidance # <--- This line needs 10 spaces of indentation
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
