@@ -13,12 +13,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Or your desired Node.js version
-      - name: Run npm install
+          node-version: '20'
         run: npm install
-        working-directory: ./career-guidance # <--- ADD THIS LINE HERE
-      - run: npm run build
-        working-directory: ./career-guidance # <--- ADD THIS LINE HERE
+        working-directory: ./career-guidance 
+        working-directory: ./career-guidance 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
